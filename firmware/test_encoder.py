@@ -9,7 +9,7 @@
 from machine import Pin, I2C
 import time, math
 
-i2c = I2C(0, sda=Pin(8), scl=Pin(9), freq=400_000)
+i2c = I2C(1, sda=Pin(14), scl=Pin(15), freq=400_000)
 AS5600_ADDR = 0x36
 REG_ANGLE_H = 0x0C   # high byte of 12-bit raw angle
 REG_STATUS  = 0x0B   # bit 5 = MH (too strong), bit 4 = ML (too weak),

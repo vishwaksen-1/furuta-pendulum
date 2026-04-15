@@ -116,7 +116,7 @@ def test_a_fixed_rate_sweep():
     print("  Listen for stall or resonance. Note the last rate that runs clean.\n")
 
     rates = [50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 800,
-             900, 1000, 1100, 1200, 1400, 1600, 1800, 2000]
+             900, 1000, 1100, 1200, 1400, 1600, 1800, 2000] + list(range(8000, 10000, 200))
 
     print(f"  {'Rate (steps/s)':>15}  {'RPM':>7}  {'Delay µs':>10}  Result")
     separator()

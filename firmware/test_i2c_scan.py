@@ -6,7 +6,7 @@
 from machine import Pin, I2C
 import time
 
-i2c = I2C(0, sda=Pin(8), scl=Pin(9), freq=400_000)
+i2c = I2C(1, sda=Pin(14), scl=Pin(15), freq=400_000)
 
 print("Scanning I2C bus...")
 devices = i2c.scan()

@@ -12,8 +12,8 @@ DIR_PIN       = Pin(3, Pin.OUT)
 EN_PIN        = Pin(4, Pin.OUT)
 
 STEPS_PER_REV = 1600
-MAX_STEP_RATE  = 800.0      # steps/s ceiling
-MAX_STEP_ACCEL = 4000.0     # steps/s² ramp rate
+MAX_STEP_RATE  = 8000.0      # steps/s ceiling
+MAX_STEP_ACCEL = 5120000.0/8     # steps/s² ramp rate
 
 step_rate  = 0.0
 step_accum = 0.0
