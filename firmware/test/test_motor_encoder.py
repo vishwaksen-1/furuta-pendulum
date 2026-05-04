@@ -261,9 +261,4 @@ print(f"\n{'─'*60}")
 print("  INTERPRETATION")
 print("  If Test C shows step_loss > 5: reduce MAX_STEP_ACCEL in main.py")
 print("  If Test B phi deflection is ~0: arm may not be moving (check EN)")
-# if sum_e[4] is not None:
-#     print(f"  Test E ring frequency: measured ≈ {sum_e[4]:.2f} Hz (expected ωₙ ≈ 1.84 Hz)")
-# else:
-#     print("  Test E ring frequency: could not estimate (ringdown too small/damped; try larger step rate or lower threshold)")
-# print("  If ring frequency differs: update pendulum length in feasibility tracker")
 print(f"{'─'*60}")
