@@ -1,4 +1,4 @@
-# speed_test.py
+# motor_speed_test.py
 # Standalone speed/limit test for 17HS4401S + A4988 + RPi Pico
 # No encoder needed. Motor + driver wired per hardware/wiring_diagram.md
 #

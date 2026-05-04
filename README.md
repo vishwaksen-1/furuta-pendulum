@@ -65,8 +65,7 @@ furuta-pendulum/
 │   ├── 02_control_design.md         ← PD pole-placement, gain derivation
 │   ├── 03_constraints.md            ← hard/soft system constraints
 │   ├── 04_hardware_setup.md         ← wiring, current calibration, assembly
-│   ├── 05_tuning_guide.md           ← step-by-step gain tuning procedure
-│   └── 06_lqr_control.md            ← LQR design and implementation
+│   └── 05_tuning_guide.md           ← step-by-step gain tuning procedure
 │
 ├── hardware/
 │   ├── wiring_diagram.md            ← full ASCII schematic + pin table
@@ -75,21 +74,13 @@ furuta-pendulum/
 │
 ├── firmware/
 │   ├── README.md                    ← MicroPython setup guide + Pico flashing
-│   ├── main.py                      ← unified balancing controller (select PD or LQR)
-│   ├── control_lib.py               ← shared hardware & control utilities
-│   ├── control_strategies.py        ← PD and LQR controller implementations
-│   │
-│   ├── test/                        ← test suite (run tests 1–6 in order)
-│   │   ├── test_i2c_scan.py         (Test 1: verify AS5600 detected)
-│   │   ├── test_encoder.py          (Test 2: angle read + zero calibration)
-│   │   ├── test_stepper.py          (Test 3: basic motor rotation)
-│   │   ├── test_velocity.py         (Test 4: velocity estimation quality)
-│   │   ├── test_motor_encoder.py    (Test 5: motor characterisation)
-│   │   ├── test_step_rate.py        (Test 6: step rate controller)
-│   │   └── speed_test.py            (motor speed/accel characterisation)
-│   │
-│   ├── main-lin.py                  ← legacy: PD controller (reference)
-│   └── main-lqr.py                  ← legacy: LQR controller (reference)
+│   ├── main.py                      ← main balancing controller
+│   ├── test_i2c_scan.py             ← Test 1: verify AS5600 detected
+│   ├── test_encoder.py              ← Test 2: angle read + zero calibration
+│   ├── test_stepper.py              ← Test 3: basic motor rotation
+│   ├── test_velocity.py             ← Test 4: velocity estimation quality
+│   ├── test_motor_encoder.py        ← Test 5: motor characterisation via encoder
+│   └── test_step_rate.py            ← Test 6: step rate controller dry run
 │
 └── tools/
     └── feasibility_tracker.html     ← interactive browser-based feasibility calculator
@@ -99,49 +90,14 @@ furuta-pendulum/
 
 ## Quick Start
 
-### Phase 1: Learn & Design
 1. **Read the physics** — [`docs/01_physics.md`](docs/01_physics.md)
 2. **Understand the control design** — [`docs/02_control_design.md`](docs/02_control_design.md)
-3. **Review constraints** — [`docs/03_constraints.md`](docs/03_constraints.md)
-
-### Phase 2: Build & Calibrate
-4. **Wire the hardware** — [`hardware/wiring_diagram.md`](hardware/wiring_diagram.md)
-5. **Calibrate motor current** — [`docs/04_hardware_setup.md`](docs/04_hardware_setup.md)
-
-### Phase 3: Test
-6. **Flash MicroPython** — [`firmware/README.md`](firmware/README.md)
-7. **Run test suite in order** — `make test` (or run tests 1–6 manually)
-
-### Phase 4: Control & Tune
-8. **Select control strategy** — Edit `firmware/main.py`:
-   - `CONTROL_STRATEGY = "pd"` for traditional PD control (2D feedback: φ, φ̇) — **start here**
-   - `CONTROL_STRATEGY = "lqr"` for optimal LQR (4D feedback: φ, φ̇, θ, θ̇)
-   - `CONTROL_STRATEGY = "nl-p"` for nonlinear P-only (log on proportional term)
-   - `CONTROL_STRATEGY = "nl-full"` for nonlinear full PD (log on entire PD term)
-9. **Flash main controller** — `make main pd`, `make main lqr`, `make main nl-p`, or `make main nl-full`
-10. **Tune gains** — [`docs/05_tuning_guide.md`](docs/05_tuning_guide.md)
-
-### Makefile Quick Commands
-
-```bash
-# Run all tests
-make test
-
-# Flash with PD control
-make main pd
-
-# Flash with LQR control  
-make main lqr
-
-# Flash with nonlinear P control
-make main nl-p
-
-# Flash with nonlinear full PD control
-make main nl-full
-
-# Flash PD and open interactive REPL
-make run-pd
-```
+3. **Wire the hardware** — [`hardware/wiring_diagram.md`](hardware/wiring_diagram.md)
+4. **Calibrate motor current** — [`docs/04_hardware_setup.md`](docs/04_hardware_setup.md)
+5. **Flash MicroPython and run tests** — [`firmware/README.md`](firmware/README.md)
+6. **Run tests in order** — H1 through H5 in `firmware/`
+7. **Launch main controller** — `firmware/main.py`
+8. **Tune gains** — [`docs/05_tuning_guide.md`](docs/05_tuning_guide.md)
 
 ---
 
