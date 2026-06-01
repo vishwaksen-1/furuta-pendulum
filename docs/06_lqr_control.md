@@ -146,6 +146,8 @@ Where:
 - [ ] Add adaptive gain scheduling if needed
 - [ ] Consider LQR with integral action for zero steady-state error
 
+### IF SUCCESSFUL: CONSIDER CHECKING OUT THE BRANCH `lqr-dev` and CONTRIBUTING BACK TO MAINLINE!
+
 ---
 
 **Last Updated**: May 4, 2026  

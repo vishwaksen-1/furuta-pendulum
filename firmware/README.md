@@ -1,114 +1,202 @@
-# Firmware
+# Firmware (mpremote Workflow)
 
-MicroPython code for the Raspberry Pi Pico. Run the test scripts in order before running the main controller.
+This firmware guide is for command-line users only. It assumes you use `mpremote` directly or through the repository `Makefile`.
 
----
-
-## MicroPython Setup — Flash the Pico
-
-### Step 1: Download MicroPython firmware
-
-Go to the official MicroPython download page for the Pico:
-
-**→ https://micropython.org/download/rp2-pico/**
-
-Download the latest stable `.uf2` file.
-
-### Step 2: Flash
-
-1. Hold the **BOOTSEL** button on the Pico.
-2. While holding BOOTSEL, connect the Pico to your computer via USB.
-3. Release BOOTSEL. The Pico appears as a USB mass storage device called `RPI-RP2`.
-4. Drag and drop the `.uf2` file onto the `RPI-RP2` drive.
-5. The Pico reboots automatically and is now running MicroPython.
-
-### Step 3: Install Thonny IDE (recommended for beginners)
-
-Download from **https://thonny.org**
-
-In Thonny:
-- Go to **Tools → Options → Interpreter**
-- Select **MicroPython (Raspberry Pi Pico)**
-- Select the correct COM port
-
-You can now open any `.py` file from this folder, click Run, and it executes on the Pico.
-
-### Step 4: Copy files to Pico
-
-Using Thonny's file browser (View → Files), copy all `.py` files from this folder onto the Pico. The Pico's filesystem appears in the bottom panel.
-
-> Alternatively, use `mpremote` from the command line:
-> ```
-> pip install mpremote
-> mpremote cp firmware/*.py :
-> ```
+If you prefer a GUI workflow, use the Thonny guide at the end of this document.
 
 ---
 
-## File Reference
+## 1. Python Requirements
 
-| File | Purpose | Run order |
-|------|---------|-----------|
-| `test_i2c_scan.py` | Verify AS5600 is detected on I²C bus | 1st |
-| `test_encoder.py` | Read angle, find zero offset, check noise | 2nd |
-| `test_stepper.py` | Basic motor rotation in both directions | 3rd |
-| `test_velocity.py` | Evaluate velocity estimate quality | 4th |
-| `test_motor_encoder.py` | Characterise motor using encoder deflection | 5th |
-| `test_step_rate.py` | Validate step rate controller timing | 6th |
-| `main.py` | Full balancing controller | Last |
-
----
-
-## Before Running main.py
-
-1. Complete all six tests successfully.
-2. Open `main.py` and set `ZERO_RAW` to the value from `test_encoder.py`.
-3. Start with the **conservative gains** (already set as default).
-4. Follow the tuning procedure in [`../docs/05_tuning_guide.md`](../docs/05_tuning_guide.md).
-
----
-
-## Serial Monitor
-
-All scripts print status over USB serial at 115200 baud. In Thonny, output appears in the Shell panel. From a terminal:
+Install host-side tooling from the repository root:
 
 ```bash
-# Linux / macOS
-screen /dev/ttyACM0 115200
-
-# Windows — use PuTTY or Thonny Shell
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
-Press **Ctrl+C** to stop any running script. The motor will be disabled on KeyboardInterrupt.
+Current dependency list is in `requirements.txt`:
+
+- `mpremote`
+
+Verify installation:
+
+```bash
+mpremote --version
+```
 
 ---
 
-## Pico Pinout Reference (Used Pins)
+## 2. Flash MicroPython to Pico
 
-```
-                    ┌──────────┐
-               GP0  │  1   40  │ VBUS
-               GP1  │  2   39  │ VSYS  ← USB power in
-               GND  │  3   38  │ GND
-               GP2  │  4   37  │ 3V3EN
-               GP3  │  5   36  │ 3V3   ← logic power out
-               GP4  │  6   35  │ ADC_VREF
-               GP5  │  7   34  │ GP28
-               GND  │  8   33  │ GND
-               GP6  │  9   32  │ GP27
-               GP7  │ 10   31  │ GP26
-  AS5600 SDA ─ GP8  │ 11   30  │ RUN
-  AS5600 SCL ─ GP9  │ 12   29  │ GP22
-               GND  │ 13   28  │ GND
-              GP10  │ 14   27  │ GP21
-              GP11  │ 15   26  │ GP20
-              GP12  │ 16   25  │ GP19
-              GP13  │ 17   24  │ GP18
-               GND  │ 18   23  │ GND
-              GP14  │ 19   22  │ GP17
-              GP15  │ 20   21  │ GP16
-                    └──────────┘
+1. Download UF2 from https://micropython.org/download/rp2-pico/
+2. Hold BOOTSEL and plug in Pico.
+3. Drag UF2 to `RPI-RP2` drive.
+4. Pico reboots into MicroPython.
 
-  GP2 → STEP     GP3 → DIR     GP4 → ENABLE
-  GP8 → SDA      GP9 → SCL
+Check device visibility:
+
+```bash
+mpremote list
 ```
+
+On Linux, if permission is denied on `/dev/ttyACM0`:
+
+```bash
+sudo usermod -a -G dialout $USER
+```
+
+Then log out and back in.
+
+---
+
+## 3. Firmware Files and Controller Modes
+
+Main control entry files:
+
+- `main-lin.py` - baseline linear PD
+- `main-nl-p.py` - nonlinear P variant
+- `main-nl-full.py` - nonlinear full variant
+- `main-lqr.py` - **⚠️ EXPERIMENTAL**: LQR state-feedback control (NOT YET TESTED on hardware; LQR gain matrix must be tuned experimentally; see [`../docs/06_lqr_control.md`](../docs/06_lqr_control.md))
+
+Test scripts (run in order):
+
+1. `test_i2c_scan.py`
+2. `test_encoder.py`
+3. `test_stepper.py`
+4. `test_velocity.py`
+5. `test_motor_encoder.py`
+6. `test_step_rate.py`
+
+---
+
+## 4. Direct mpremote Usage (without Makefile)
+
+### Flash and Run a Test
+
+```bash
+mpremote fs cp firmware/test_i2c_scan.py :main.py
+mpremote reset
+```
+
+### Flash and Run a Controller
+
+```bash
+mpremote fs cp firmware/main-lin.py :main.py
+mpremote reset
+```
+
+### Manually Run a File with Live Output
+
+To run a main file and see serial output in real-time without interactive mode:
+
+```bash
+# Flash and execute in one go, stream output
+mpremote fs cp firmware/main-lin.py :main.py
+mpremote run :main.py
+```
+
+Or execute a file already on the Pico:
+
+```bash
+mpremote exec "exec(open('main.py').read())"
+```
+
+### Interactive REPL (for debugging)
+
+Open interactive Python prompt on the Pico:
+
+```bash
+mpremote
+```
+
+From the REPL, you can:
+- Import and run functions directly
+- Test sensors and motor commands
+- Press `Ctrl+D` to exit
+
+---
+
+## 5. Makefile Workflow (recommended)
+
+The `Makefile` is a thin wrapper around `mpremote` and is the fastest day-to-day workflow.
+
+From repository root:
+
+```bash
+make help
+```
+
+Run tests:
+
+```bash
+# Run all tests in sequence
+make test
+
+# Run a specific test
+make test 1
+make test 6
+```
+
+Flash controller modes:
+
+```bash
+make main linear
+make main nl 1
+make main nl 2
+```
+
+Notes:
+
+- `make main linear` flashes `firmware/main-lin.py` as `:main.py`
+- `make main nl 1` flashes `firmware/main-nl-p.py` as `:main.py`
+- `make main nl 2` flashes `firmware/main-nl-full.py` as `:main.py`
+
+If your `mpremote` is in a custom virtual environment:
+
+```bash
+make VENV=$HOME/path/to/venv test
+```
+
+Or override executable directly:
+
+```bash
+make MPREMOTE=$HOME/path/to/mpremote test
+```
+
+---
+
+## 6. Typical Bring-up Sequence
+
+1. Flash MicroPython UF2.
+2. Run `make test`.
+3. From `test_encoder.py`, record and update `ZERO_RAW` in selected `main-*.py`.
+4. Flash desired control mode (`make main linear` or nonlinear modes).
+5. Hold pendulum upright and observe serial output.
+
+---
+
+## 7. Serial and Safety Notes
+
+- Use `mpremote` interactive mode for live logs.
+- Press `Ctrl+C` to interrupt.
+- Ensure motor is disabled before rewiring.
+- Keep wiring clear of moving arm before enabling control.
+
+---
+
+## 8. Troubleshooting
+
+- Device not found: run `mpremote list`; reconnect USB cable.
+- Permission denied on Linux: add user to `dialout` group.
+- No motion: verify A4988 enable/dir/step pins and motor supply.
+- Unstable behavior: verify `ZERO_RAW`, run tests again, then retune gains.
+
+---
+
+## 9. Alternative GUI Workflow (Thonny)
+
+For users who prefer Thonny, use:
+
+- [Thonny Guide](../docs/07_thonny_guide.md)
